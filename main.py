@@ -32,7 +32,7 @@ def get_client_ip(request: Request):
     return ip
 
 def get_location(ip):
-    ipgeolocation_api_key = 'YOUR_IPGEOLOCATION_API_KEY'
+    ipgeolocation_api_key = '696940ac2594400c94cb3bffb9f37b8e'
     response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={ipgeolocation_api_key}&ip={ip}')
     data = response.json()
     return {
@@ -41,7 +41,7 @@ def get_location(ip):
     }
 
 def get_temperature(state):
-    openweather_api_key = 'YOUR_OPENWEATHER_API_KEY'
+    openweather_api_key = 'a64222d0621682143c070b0824387864'
     response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={state}&appid={openweather_api_key}&units=metric')
     data = response.json()
     
