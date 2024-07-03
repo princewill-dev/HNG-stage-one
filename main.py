@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import requests
 
 app = FastAPI()
 
 @app.get("/api/hello")
-async def hello(request: Request, visitor_name: str = ""):
+async def hello(request: Request, visitor_name: str = "Guest"):
     # Get client's IP address
     client_ip = get_client_ip(request)
 
@@ -18,7 +18,7 @@ async def hello(request: Request, visitor_name: str = ""):
     response_data = {
         "client_ip": client_ip,
         "location": location_data['city'],
-        "greeting": f"Hello, {visitor_name}! The temperature is {temperature} degrees Celsius in {location_data['city']}."
+        "greeting": f"Hello, {visitor_name}!, the temperature is {temperature} degrees Celsius in {location_data['city']}"
     }
     
     return JSONResponse(content=response_data)
@@ -44,11 +44,7 @@ def get_temperature(city):
     openweather_api_key = 'a64222d0621682143c070b0824387864'
     response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={openweather_api_key}&units=metric')
     data = response.json()
-    
-    if response.status_code != 200 or 'main' not in data:
-        raise HTTPException(status_code=404, detail="Could not fetch temperature data")
-    
-    return round(data['main']['temp'])
+    return data['main']['temp']
 
 if __name__ == "__main__":
     import uvicorn
