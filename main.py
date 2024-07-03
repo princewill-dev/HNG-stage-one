@@ -32,7 +32,7 @@ def get_client_ip(request: Request):
     return ip
 
 def get_location(ip):
-    ipstack_access_key = 'https://princewilldev.com/'
+    ipstack_access_key = 'fda965c04cc2efa4e8d332510d65f716'
     response = requests.get(f'http://api.ipstack.com/{ip}?access_key={ipstack_access_key}')
     data = response.json()
     return {
