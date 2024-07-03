@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 import requests
 
@@ -13,12 +13,12 @@ async def hello(request: Request, visitor_name: str = "Guest"):
     location_data = get_location(client_ip)
 
     # Fetch weather data
-    temperature = get_temperature(location_data['city'])
+    temperature = get_temperature(location_data['state'])
 
     response_data = {
         "client_ip": client_ip,
-        "location": location_data['city'],
-        "greeting": f"Hello, {visitor_name}!, the temperature is {temperature} degrees Celsius in {location_data['city']}"
+        "location": location_data['state'],
+        "greeting": f"Hello, {visitor_name}!, the temperature is {temperature} degrees Celsius in {location_data['state']}"
     }
     
     return JSONResponse(content=response_data)
@@ -32,18 +32,22 @@ def get_client_ip(request: Request):
     return ip
 
 def get_location(ip):
-    ipgeolocation_api_key = '696940ac2594400c94cb3bffb9f37b8e'
+    ipgeolocation_api_key = 'YOUR_IPGEOLOCATION_API_KEY'
     response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={ipgeolocation_api_key}&ip={ip}')
     data = response.json()
     return {
-        'city': data.get('city', 'Unknown'),
+        'state': data.get('state_prov', 'Unknown'),
         'country': data.get('country_name', 'Unknown')
     }
 
-def get_temperature(city):
-    openweather_api_key = 'a64222d0621682143c070b0824387864'
-    response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={openweather_api_key}&units=metric')
+def get_temperature(state):
+    openweather_api_key = 'YOUR_OPENWEATHER_API_KEY'
+    response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={state}&appid={openweather_api_key}&units=metric')
     data = response.json()
+    
+    if response.status_code != 200 or 'main' not in data:
+        raise HTTPException(status_code=404, detail="Could not fetch temperature data")
+    
     return data['main']['temp']
 
 if __name__ == "__main__":
