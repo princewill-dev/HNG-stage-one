@@ -15,7 +15,7 @@ class HelloResponse(BaseModel):
     greeting: str
 
 def get_city_from_ip(ip_address: str) -> str:
-    geolocation_api_key = os.getenv("IPGEOLOCATION_API_KEY")
+    geolocation_api_key = "696940ac2594400c94cb3bffb9f37b8e"
     if not geolocation_api_key:
         raise HTTPException(status_code=500, detail="Geolocation API key not found")
     
@@ -48,7 +48,7 @@ async def hello(request: Request, visitor_name: str = Query(...)):
         city = "unknown"
     
     # Get weather data for the city
-    weather_api_key = os.getenv("OPENWEATHERMAP_API_KEY")
+    weather_api_key = "a64222d0621682143c070b0824387864"
     if not weather_api_key:
         raise HTTPException(status_code=500, detail="Weather API key not found")
     

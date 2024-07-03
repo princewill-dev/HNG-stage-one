@@ -1,3 +1,4 @@
 .env
 env/
 myenv
+api.json
