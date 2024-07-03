@@ -25,17 +25,18 @@ def get_city_from_ip(ip_address: str) -> str:
         geolocation_response.raise_for_status()
         geolocation_data = geolocation_response.json()
         
-        if 'city' not in geolocation_data:
-            raise ValueError("Unexpected geolocation data format")
+        if 'city' not in geolocation_data or not geolocation_data['city']:
+            print(f"Unexpected geolocation data format or city not found for IP {ip_address}: {geolocation_data}")
+            return "unknown"
         
         city = geolocation_data["city"]
         return city
     except requests.RequestException as e:
         print(f"Error fetching geolocation data: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching geolocation data")
+        return "unknown"
     except ValueError as e:
         print(f"Error parsing geolocation data: {e}")
-        raise HTTPException(status_code=500, detail="Error parsing geolocation data")
+        return "unknown"
 
 @app.get("/api/hello", response_model=HelloResponse)
 async def hello(request: Request, visitor_name: str = Query(...)):
@@ -58,9 +59,10 @@ async def hello(request: Request, visitor_name: str = Query(...)):
         weather_data = weather_response.json()
         
         if 'main' not in weather_data or 'temp' not in weather_data['main']:
-            raise ValueError("Unexpected weather data format")
-        
-        temperature = weather_data["main"]["temp"]
+            print(f"Unexpected weather data format for city {city}: {weather_data}")
+            temperature = "unknown"
+        else:
+            temperature = weather_data["main"]["temp"]
     except requests.RequestException as e:
         print(f"Error fetching weather data: {e}")
         temperature = "unknown"
