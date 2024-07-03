@@ -36,7 +36,7 @@ def get_location(ip):
     response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={ipgeolocation_api_key}&ip={ip}')
     data = response.json()
     return {
-        'city': data.get('state_prov', 'Unknown'),
+        'city': data.get('city', 'Unknown'),
         'country': data.get('country_name', 'Unknown')
     }
 
