@@ -14,12 +14,39 @@ class HelloResponse(BaseModel):
     location: str
     greeting: str
 
+def get_city_from_ip(ip_address: str) -> str:
+    geolocation_api_key = os.getenv("IPGEOLOCATION_API_KEY")
+    if not geolocation_api_key:
+        raise HTTPException(status_code=500, detail="Geolocation API key not found")
+    
+    try:
+        geolocation_url = f"https://api.ipgeolocation.io/ipgeo?apiKey={geolocation_api_key}&ip={ip_address}"
+        geolocation_response = requests.get(geolocation_url)
+        geolocation_response.raise_for_status()
+        geolocation_data = geolocation_response.json()
+        
+        if 'city' not in geolocation_data:
+            raise ValueError("Unexpected geolocation data format")
+        
+        city = geolocation_data["city"]
+        return city
+    except requests.RequestException as e:
+        print(f"Error fetching geolocation data: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching geolocation data")
+    except ValueError as e:
+        print(f"Error parsing geolocation data: {e}")
+        raise HTTPException(status_code=500, detail="Error parsing geolocation data")
+
 @app.get("/api/hello", response_model=HelloResponse)
 async def hello(request: Request, visitor_name: str = Query(...)):
     client_ip = request.client.host
-    city = "New York"
     
-    # Get weather data for New York
+    try:
+        city = get_city_from_ip(client_ip)
+    except HTTPException as e:
+        city = "unknown"
+    
+    # Get weather data for the city
     weather_api_key = os.getenv("OPENWEATHERMAP_API_KEY")
     if not weather_api_key:
         raise HTTPException(status_code=500, detail="Weather API key not found")
