@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 import requests
 
 app = FastAPI()
 
 @app.get("/api/hello")
-async def hello(request: Request, visitor_name: str = "Guest"):
+async def hello(request: Request, visitor_name: str = ""):
     # Get client's IP address
     client_ip = get_client_ip(request)
 
@@ -18,7 +18,7 @@ async def hello(request: Request, visitor_name: str = "Guest"):
     response_data = {
         "client_ip": client_ip,
         "location": location_data['city'],
-        "greeting": f"Hello, {visitor_name}!, the temperature is {temperature} degrees Celsius in {location_data['city']}"
+        "greeting": f"Hello, {visitor_name}! The temperature is {temperature} degrees Celsius in {location_data['city']}."
     }
     
     return JSONResponse(content=response_data)
@@ -32,11 +32,11 @@ def get_client_ip(request: Request):
     return ip
 
 def get_location(ip):
-    ipstack_access_key = 'fda965c04cc2efa4e8d332510d65f716'
-    response = requests.get(f'http://api.ipstack.com/{ip}?access_key={ipstack_access_key}')
+    ipgeolocation_api_key = '696940ac2594400c94cb3bffb9f37b8e'
+    response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={ipgeolocation_api_key}')
     data = response.json()
     return {
-        'city': data.get('city', 'Unknown'),
+        'city': data.get('state_prov', 'Unknown'),
         'country': data.get('country_name', 'Unknown')
     }
 
@@ -44,7 +44,11 @@ def get_temperature(city):
     openweather_api_key = 'a64222d0621682143c070b0824387864'
     response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={openweather_api_key}&units=metric')
     data = response.json()
-    return data['main']['temp']
+    
+    if response.status_code != 200 or 'main' not in data:
+        raise HTTPException(status_code=404, detail="Could not fetch temperature data")
+    
+    return round(data['main']['temp'])
 
 if __name__ == "__main__":
     import uvicorn
