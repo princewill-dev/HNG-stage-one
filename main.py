@@ -15,18 +15,21 @@ class HelloResponse(BaseModel):
     greeting: str
 
 def get_city_from_ip(ip_address: str) -> str:
-    geolocation_api_key = "696940ac2594400c94cb3bffb9f37b8e"
+    geolocation_api_key = os.getenv("IPGEOLOCATION_API_KEY", "696940ac2594400c94cb3bffb9f37b8e")
     if not geolocation_api_key:
         raise HTTPException(status_code=500, detail="Geolocation API key not found")
     
     try:
         geolocation_url = f"https://api.ipgeolocation.io/ipgeo?apiKey={geolocation_api_key}&ip={ip_address}"
+        print(f"Requesting geolocation for IP: {ip_address}")  # Debug print
         geolocation_response = requests.get(geolocation_url)
         geolocation_response.raise_for_status()
         geolocation_data = geolocation_response.json()
         
+        print(f"Geolocation API response: {geolocation_data}")  # Debug print
+        
         if 'city' not in geolocation_data or not geolocation_data['city']:
-            print(f"Unexpected geolocation data format or city not found for IP {ip_address}: {geolocation_data}")
+            print(f"City not found in geolocation data for IP {ip_address}")
             return "unknown"
         
         city = geolocation_data["city"]
@@ -41,6 +44,7 @@ def get_city_from_ip(ip_address: str) -> str:
 @app.get("/api/hello", response_model=HelloResponse)
 async def hello(request: Request, visitor_name: str = Query(...)):
     client_ip = request.client.host
+    print(f"Received request from IP: {client_ip}")  # Debug print
     
     try:
         city = get_city_from_ip(client_ip)
@@ -48,18 +52,21 @@ async def hello(request: Request, visitor_name: str = Query(...)):
         city = "unknown"
     
     # Get weather data for the city
-    weather_api_key = "a64222d0621682143c070b0824387864"
+    weather_api_key = os.getenv("OPENWEATHERMAP_API_KEY", "a64222d0621682143c070b0824387864")
     if not weather_api_key:
         raise HTTPException(status_code=500, detail="Weather API key not found")
     
     try:
         weather_url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_api_key}&units=metric"
+        print(f"Requesting weather for city: {city}")  # Debug print
         weather_response = requests.get(weather_url)
         weather_response.raise_for_status()
         weather_data = weather_response.json()
         
+        print(f"Weather API response: {weather_data}")  # Debug print
+        
         if 'main' not in weather_data or 'temp' not in weather_data['main']:
-            print(f"Unexpected weather data format for city {city}: {weather_data}")
+            print(f"Unexpected weather data format for city {city}")
             temperature = "unknown"
         else:
             temperature = weather_data["main"]["temp"]
