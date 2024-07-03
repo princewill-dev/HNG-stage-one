@@ -32,8 +32,8 @@ def get_client_ip(request: Request):
     return ip
 
 def get_location(ip):
-    ipgeolocation_api_key = '696940ac2594400c94cb3bffb9f37b8e'
-    response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={ipgeolocation_api_key}&ip={ip}')
+    ipstack_access_key = 'https://princewilldev.com/'
+    response = requests.get(f'http://api.ipstack.com/{ip}?access_key={ipstack_access_key}')
     data = response.json()
     return {
         'city': data.get('city', 'Unknown'),
