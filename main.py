@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Request, Query, HTTPException
 from pydantic import BaseModel
 import requests
 import os
@@ -42,8 +42,9 @@ def get_city_from_ip(ip_address: str) -> str:
         return "unknown"
 
 @app.get("/api/hello", response_model=HelloResponse)
-async def hello(visitor_name: str = Query(...), client_ip: str = Query(...)):
-    print(f"Received request for IP: {client_ip}")  # Debug print
+async def hello(request: Request, visitor_name: str = Query(...)):
+    client_ip = request.client.host
+    print(f"Received request from IP: {client_ip}")  # Debug print
     
     try:
         city = get_city_from_ip(client_ip)
